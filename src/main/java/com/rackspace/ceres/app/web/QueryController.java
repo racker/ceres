@@ -18,30 +18,46 @@ package com.rackspace.ceres.app.web;
 
 import static com.rackspace.ceres.app.web.TagListConverter.convertPairsListToMap;
 
-import com.rackspace.ceres.app.config.DownsampleProperties;
-import com.rackspace.ceres.app.downsample.Aggregator;
-import com.rackspace.ceres.app.model.QueryResult;
-import com.rackspace.ceres.app.services.QueryService;
-import com.rackspace.ceres.app.utils.DateTimeUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.rackspace.ceres.app.config.DownsampleProperties;
+import com.rackspace.ceres.app.downsample.Aggregator;
+import com.rackspace.ceres.app.model.QueryResult;
+import com.rackspace.ceres.app.model.TimeQuery;
+import com.rackspace.ceres.app.model.TimeQueryData;
+import com.rackspace.ceres.app.services.QueryService;
+import com.rackspace.ceres.app.utils.DateTimeUtils;
+
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Native Ceres query API endpoints.
  */
 @RestController
+@Slf4j
 @RequestMapping("/api/query")
 @Profile("query")
 public class QueryController {
+	
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(QueryController.class);
 
   private final QueryService queryService;
   private final DownsampleProperties downsampleProperties;
@@ -51,6 +67,33 @@ public class QueryController {
     this.queryService = queryService;
     this.downsampleProperties = downsampleProperties;
   }
+  
+	@PostMapping
+	public Mono<ResponseEntity<?>> postGraf(@RequestBody TimeQueryData timeQueryData) {
+
+//		timeQueryData.flatMap(data -> {
+//	        log.debug("timeQueryData {}", data.getStart());
+//			return Mono.just(data);
+//		});
+
+		System.out.println("Start: " + timeQueryData.getStart().toString());
+		System.out.println("End: " + timeQueryData.getEnd().toString());
+
+		List<TimeQuery> queries = timeQueryData.getQueries();
+		for (TimeQuery query : queries) {
+			System.out.println("Metric:" + query.getMetric());
+			System.out.println("downsample:" + query.getDownsample());
+			
+			List<Map<String, String>> filters = query.getFilters();
+			for (Map<String, String> filter : filters) {
+				System.out.println("type:" + filter.get("type"));
+				System.out.println("tagk:" + filter.get("tagk"));
+				System.out.println("filter:" + filter.get("filter"));
+			}		
+		}
+
+		return Mono.just(ResponseEntity.noContent().build());
+	}
 
   @GetMapping
   public Flux<QueryResult> query(@RequestParam(name = "tenant") String tenantParam,
