@@ -18,15 +18,20 @@ package com.rackspace.ceres.app.web;
 
 import static com.rackspace.ceres.app.web.TagListConverter.convertPairsListToMap;
 
+import com.rackspace.ceres.app.config.DownsampleProperties;
+import com.rackspace.ceres.app.downsample.Aggregator;
+import com.rackspace.ceres.app.model.QueryResult;
+import com.rackspace.ceres.app.model.TimeQuery;
+import com.rackspace.ceres.app.model.TimeQueryData;
+import com.rackspace.ceres.app.services.QueryService;
+import com.rackspace.ceres.app.utils.DateTimeUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,16 +40,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.rackspace.ceres.app.config.DownsampleProperties;
-import com.rackspace.ceres.app.downsample.Aggregator;
-import com.rackspace.ceres.app.model.QueryResult;
-import com.rackspace.ceres.app.model.TimeQuery;
-import com.rackspace.ceres.app.model.TimeQueryData;
-import com.rackspace.ceres.app.services.QueryService;
-import com.rackspace.ceres.app.utils.DateTimeUtils;
-
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -52,12 +47,9 @@ import reactor.core.publisher.Mono;
  * Native Ceres query API endpoints.
  */
 @RestController
-@Slf4j
 @RequestMapping("/api/query")
 @Profile("query")
 public class QueryController {
-	
-  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(QueryController.class);
 
   private final QueryService queryService;
   private final DownsampleProperties downsampleProperties;
